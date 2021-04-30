@@ -117,7 +117,8 @@ export const createBlockCanvas = (blockData, blockSize = 10) => {
 export const createBlockDifferenceCanvas = (
   blockData,
   prevBlockData,
-  blockSize = 10
+  blockSize = 10,
+  threshold = 0.2
 ) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
@@ -147,7 +148,7 @@ export const createBlockDifferenceCanvas = (
       const prevBlockBrightness = prevBlockRow[x];
       const diff = Math.abs(blockBrightness - prevBlockBrightness);
 
-      if (diff > 0.01) {
+      if (diff > threshold) {
         // block width deterimined by brightness
         const brightnessSize = blockSize * blockBrightness;
         const offset = (blockSize - brightnessSize) / 2;

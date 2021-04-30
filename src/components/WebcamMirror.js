@@ -8,7 +8,12 @@ import {
 } from "../logic/createBlockCanvas";
 // import { createSmallCanvas } from "../logic/createSmallCanvas";
 
-export const WebcamMirror = ({ showVideo = false }) => {
+export const WebcamMirror = ({
+  showVideo = false,
+  resolution = 2,
+  blockSize = 2,
+  threshold = 0.09
+}) => {
   const [prevBlockData, setPrevBlockData] = useState(null);
 
   const canvasRef = useRef(null);
@@ -23,13 +28,18 @@ export const WebcamMirror = ({ showVideo = false }) => {
       if (!canvasRef || !canvasRef.current) return;
       const screenCanvas = canvasRef.current;
 
-      const blockData = getBlockData(frameCanvas, 10);
+      const blockData = getBlockData(frameCanvas, resolution);
       let blockCanvas;
 
       if (prevBlockData) {
-        blockCanvas = createBlockDifferenceCanvas(blockData, prevBlockData, 10);
+        blockCanvas = createBlockDifferenceCanvas(
+          blockData,
+          prevBlockData,
+          blockSize,
+          threshold
+        );
       } else {
-        blockCanvas = createBlockCanvas(blockData, 10);
+        blockCanvas = createBlockCanvas(blockData, resolution);
       }
 
       setPrevBlockData(blockData);
