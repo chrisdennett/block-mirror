@@ -1,4 +1,4 @@
-export const getAvgBrightnessOfBlock = ({
+const getAvgBrightnessOfBlock = ({
   pixels,
   inputWidth,
   pixelsPerBlock = 100,
@@ -62,13 +62,7 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
   return blockData;
 };
 
-export const createBlockCanvas = (
-  inputCanvas,
-  pixelsPerBlock = 10,
-  blockSize = 10
-) => {
-  const blockData = getBlockData(inputCanvas, pixelsPerBlock);
-
+export const createBlockCanvas = (blockData, blockSize = 10) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
 
@@ -120,15 +114,13 @@ export const createBlockCanvas = (
   return outputCanvas;
 };
 
-export const createBlockCanvas2 = (
-  inputCanvas,
-  pixelsPerBlock = 10,
+export const createBlockDifferenceCanvas = (
+  blockData,
+  prevBlockData,
   blockSize = 10
 ) => {
-  const { width: inputW, height: inputH } = inputCanvas;
-
-  const cols = Math.ceil(inputW / pixelsPerBlock);
-  const rows = Math.ceil(inputH / pixelsPerBlock);
+  const cols = blockData[0].length;
+  const rows = blockData.length;
 
   const outWidth = cols * blockSize;
   const outHeight = rows * blockSize;
@@ -138,51 +130,45 @@ export const createBlockCanvas2 = (
   outputCanvas.height = outHeight;
   const outputCtx = outputCanvas.getContext("2d");
 
-  const inputCtx = inputCanvas.getContext("2d");
-  let imgData = inputCtx.getImageData(0, 0, inputW, inputH);
-  let pixels = imgData.data;
-
   let blockX, blockY;
   outputCtx.fillStyle = "black";
   const halfBlockSize = blockSize / 2;
 
   for (let y = 0; y < rows; y++) {
+    const row = blockData[y];
+    const prevBlockRow = prevBlockData[y];
     for (let x = 0; x < cols; x++) {
       // average the pixels in the area by looping through
 
-      const blockCornerX = x * pixelsPerBlock;
-      const blockCornerY = y * pixelsPerBlock;
+      const blockCornerX = x * blockSize;
+      const blockCornerY = y * blockSize;
 
-      const blockBrightness = getAvgBrightnessOfBlock({
-        pixels,
-        inputWidth: inputW,
-        pixelsPerBlock,
-        blockCornerX,
-        blockCornerY
-      });
+      const blockBrightness = row[x];
+      const prevBlockBrightness = prevBlockRow[x];
+      const diff = Math.abs(blockBrightness - prevBlockBrightness);
 
-      // block width deterimined by brightness
-      const brightnessSize = blockSize * blockBrightness;
-      const offset = (blockSize - brightnessSize) / 2;
+      if (diff > 0.01) {
+        // block width deterimined by brightness
+        const brightnessSize = blockSize * blockBrightness;
+        const offset = (blockSize - brightnessSize) / 2;
 
-      // TODO this Block pos only works for vertical cetner alignment
-      blockX = offset + x * blockSize;
-      blockY = offset + y * blockSize;
+        // TODO this Block pos only works for vertical cetner alignment
+        blockX = offset + blockCornerX;
+        blockY = offset + blockCornerY;
 
-      outputCtx.beginPath();
+        outputCtx.beginPath();
 
-      // outputCtx.fillRect(blockX, blockY, brightnessSize, brightnessSize);
+        outputCtx.arc(
+          blockX + halfBlockSize,
+          blockY + halfBlockSize,
+          brightnessSize / 2,
+          0,
+          Math.PI * 2
+        );
+        outputCtx.fill();
 
-      outputCtx.arc(
-        blockX + halfBlockSize,
-        blockY + halfBlockSize,
-        brightnessSize / 2,
-        0,
-        Math.PI * 2
-      );
-      outputCtx.fill();
-
-      outputCtx.closePath();
+        outputCtx.closePath();
+      }
     }
   }
 

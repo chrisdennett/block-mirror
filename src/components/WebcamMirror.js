@@ -1,31 +1,45 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useState } from "react";
 import Webcam from "react-webcam";
 import { useAnimationFrame } from "../hooks/useAnimationFrame";
-import { createBlockCanvas } from "../logic/createBlockCanvas";
+import {
+  createBlockCanvas,
+  createBlockDifferenceCanvas,
+  getBlockData
+} from "../logic/createBlockCanvas";
 // import { createSmallCanvas } from "../logic/createSmallCanvas";
 
 export const WebcamMirror = ({ showVideo = false }) => {
+  const [prevBlockData, setPrevBlockData] = useState(null);
+
   const canvasRef = useRef(null);
   const webcamRef = useRef(null);
 
   useAnimationFrame(() => onFrameUpdate());
 
-  const onFrameUpdate = useCallback(() => {
+  const onFrameUpdate = () => {
     if (!webcamRef || !webcamRef.current) return;
     const frameCanvas = webcamRef.current.getCanvas();
     if (frameCanvas) {
       if (!canvasRef || !canvasRef.current) return;
       const screenCanvas = canvasRef.current;
 
-      // const smallCanvas = createSmallCanvas(frameCanvas, 40, 30);
-      const blockCanvas = createBlockCanvas(frameCanvas, 10, 10);
+      const blockData = getBlockData(frameCanvas, 10);
+      let blockCanvas;
+
+      if (prevBlockData) {
+        blockCanvas = createBlockDifferenceCanvas(blockData, prevBlockData, 10);
+      } else {
+        blockCanvas = createBlockCanvas(blockData, 10);
+      }
+
+      setPrevBlockData(blockData);
 
       const ctx = screenCanvas.getContext("2d");
       screenCanvas.width = blockCanvas.width;
       screenCanvas.height = blockCanvas.height;
       ctx.drawImage(blockCanvas, 0, 0);
     }
-  }, []);
+  };
 
   return (
     <div>
