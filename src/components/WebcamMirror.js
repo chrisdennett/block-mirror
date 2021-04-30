@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { useAnimationFrame } from "../hooks/useAnimationFrame";
 import {
