@@ -8,7 +8,6 @@ import styles from "./blockMirror.module.css";
 
 export default function BlockMirror({
   frame,
-  blockSize = 5,
   showImage = false,
   showGrid = false,
   showBlocks = true,
@@ -25,6 +24,9 @@ export default function BlockMirror({
 
     const squareCanvas = getSquareCanvas(frame.canvas);
     const imgRes = Math.round(squareCanvas.width / blocksAcross);
+
+    // make the block size the correct size to fit screen height
+    const blockSize = window.innerHeight / blocksAcross;
 
     const blockData = getBlockData(squareCanvas, imgRes);
     const blockCanvas = createBlockCanvas({
@@ -45,6 +47,15 @@ export default function BlockMirror({
     // ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (showImage) {
+      ctx.save();
+      if (useCircle) {
+        const circleRadius = canvas.width / 2;
+        const canvasMiddle = { x: circleRadius, y: circleRadius };
+        ctx.beginPath();
+        ctx.arc(canvasMiddle.x, canvasMiddle.y, circleRadius, 0, Math.PI * 2);
+        ctx.clip();
+      }
+
       ctx.drawImage(
         squareCanvas,
         0,
@@ -56,6 +67,7 @@ export default function BlockMirror({
         canvas.width,
         canvas.height
       );
+      ctx.restore();
     }
 
     ctx.drawImage(blockCanvas, 0, 0);

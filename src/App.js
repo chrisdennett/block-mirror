@@ -29,7 +29,7 @@ export default function App() {
     bgColour: "#d2a6d8",
     Input: folder({
       inputType: {
-        value: "webcam",
+        value: "img",
         options: ["webcam", "img"],
       },
       image: {
