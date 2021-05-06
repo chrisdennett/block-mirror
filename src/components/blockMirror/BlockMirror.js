@@ -8,7 +8,7 @@ export default function BlockMirror({
   showImage = false,
   showGrid = false,
   blocksAcross,
-  colour,
+  blockColour,
   id,
 }) {
   const canvasRef = useRef(null);
@@ -23,7 +23,7 @@ export default function BlockMirror({
       blockData,
       blockSize,
       showGrid,
-      colour
+      blockColour
     );
 
     const canvas = canvasRef.current;

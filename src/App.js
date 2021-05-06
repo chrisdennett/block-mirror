@@ -12,7 +12,6 @@ export default function App() {
   const values = useControls({
     showGrid: false,
     showImage: false,
-    colour: "black",
     blocksAcross: {
       value: 70,
       min: 1,
@@ -23,6 +22,8 @@ export default function App() {
       min: 2,
       max: 100,
     },
+    blockColour: "#2a0034",
+    bgColour: "#d2a6d8",
     Input: folder({
       inputType: {
         value: "webcam",
@@ -44,16 +45,19 @@ export default function App() {
   });
 
   const toggleControls = (e) => {
-    console.log("e.target.id: ", e.target.id);
-
     if (e.target.id === "app" || e.target.id === "canvas") {
       setShowControls((prev) => !prev);
     }
   };
 
   return (
-    <div className="app" onClick={toggleControls} id="app">
-      <Leva hidden={showControls} {...values} />
+    <div
+      className="app"
+      onClick={toggleControls}
+      id="app"
+      style={{ background: values.bgColour }}
+    >
+      <Leva hidden={!showControls} {...values} />
 
       <BlockMirror id="canvas" frame={frame} {...values} />
 
