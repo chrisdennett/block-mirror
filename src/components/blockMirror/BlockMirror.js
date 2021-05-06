@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import { createBlockCanvas, getBlockData } from "../../logic/createBlockCanvas";
+import {
+  createBlockCanvas,
+  getBlockData,
+  getSquareCanvas,
+} from "../../logic/createBlockCanvas";
 import styles from "./blockMirror.module.css";
 
 export default function BlockMirror({
@@ -7,6 +11,8 @@ export default function BlockMirror({
   blockSize = 5,
   showImage = false,
   showGrid = false,
+  showBlocks = true,
+  showShadow = false,
   blocksAcross,
   blockColour,
   id,
@@ -17,18 +23,22 @@ export default function BlockMirror({
   useEffect(() => {
     if (!frame.canvas) return;
 
-    const imgRes = Math.round(frame.canvas.width / blocksAcross);
+    const squareCanvas = getSquareCanvas(frame.canvas);
+    const imgRes = Math.round(squareCanvas.width / blocksAcross);
 
-    const blockData = getBlockData(frame.canvas, imgRes);
-    const blockCanvas = createBlockCanvas(
+    const blockData = getBlockData(squareCanvas, imgRes);
+    const blockCanvas = createBlockCanvas({
       blockData,
       blockSize,
       showGrid,
+      showBlocks,
       blockColour,
-      useCircle
-    );
+      useCircle,
+      showShadow,
+    });
 
     const canvas = canvasRef.current;
+
     canvas.width = blockCanvas.width;
     canvas.height = blockCanvas.height;
     const ctx = canvas.getContext("2d");
@@ -36,11 +46,11 @@ export default function BlockMirror({
 
     if (showImage) {
       ctx.drawImage(
-        frame.canvas,
+        squareCanvas,
         0,
         0,
-        frame.canvas.width,
-        frame.canvas.height,
+        squareCanvas.width,
+        squareCanvas.height,
         0,
         0,
         canvas.width,
@@ -51,9 +61,13 @@ export default function BlockMirror({
     ctx.drawImage(blockCanvas, 0, 0);
   });
 
+  const canvasStyle = showShadow
+    ? { filter: "drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.5))" }
+    : {};
+
   return (
     <div className={styles.blockMirror} id={id}>
-      <canvas ref={canvasRef} />
+      <canvas ref={canvasRef} style={canvasStyle} />
     </div>
   );
 }

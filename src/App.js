@@ -11,10 +11,12 @@ export default function App() {
 
   const values = useControls({
     showGrid: false,
-    showImage: false,
+    showImage: true,
+    showBlocks: true,
     useCircle: true,
+    showShadow: true,
     blocksAcross: {
-      value: 70,
+      value: 98,
       min: 1,
       max: 200,
     },
@@ -32,7 +34,7 @@ export default function App() {
       },
       image: {
         render: (get) => get("Input.inputType") === "img",
-        image: "./pexels-rompalli-harish-2235924.jpg",
+        image: "./frida-square.jpg",
       },
     }),
   });

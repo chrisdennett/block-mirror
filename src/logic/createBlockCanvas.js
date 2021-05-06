@@ -64,13 +64,14 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
   return blockData;
 };
 
-export const createBlockCanvas = (
+export const createBlockCanvas = ({
   blockData,
   blockSize = 10,
   showGrid = true,
+  showBlocks,
   colour,
-  useCircle
-) => {
+  useCircle,
+}) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
 
@@ -114,6 +115,8 @@ export const createBlockCanvas = (
         outputCtx.lineWidth = 0.4;
         outputCtx.strokeRect(blockCornerX, blockCornerY, blockSize, blockSize);
       }
+
+      if (!showBlocks) continue;
 
       const blockBrightness = row[x];
       const brightnessSize = blockSize * blockBrightness;
@@ -215,4 +218,31 @@ const checkIfPointIsInCircle = (a, b, x, y, r) => {
     return true;
   }
   return false;
+};
+
+export const getSquareCanvas = (inputCanvas) => {
+  const outCanvas = document.createElement("canvas");
+  const { width: inW, height: inH } = inputCanvas;
+  const maxSize = inW > inH ? inH : inW;
+
+  outCanvas.width = maxSize;
+  outCanvas.height = maxSize;
+
+  const xOffset = (inW - maxSize) / 2;
+  const yOffset = (inH - maxSize) / 2;
+
+  const ctx = outCanvas.getContext("2d");
+  ctx.drawImage(
+    inputCanvas,
+    xOffset,
+    yOffset,
+    maxSize,
+    maxSize,
+    0,
+    0,
+    maxSize,
+    maxSize
+  );
+
+  return outCanvas;
 };
