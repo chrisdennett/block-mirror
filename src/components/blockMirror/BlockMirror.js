@@ -8,6 +8,8 @@ export default function BlockMirror({
   showImage = false,
   showGrid = false,
   blocksAcross,
+  colour,
+  id,
 }) {
   const canvasRef = useRef(null);
 
@@ -17,7 +19,12 @@ export default function BlockMirror({
     const imgRes = Math.round(frame.canvas.width / blocksAcross);
 
     const blockData = getBlockData(frame.canvas, imgRes);
-    const blockCanvas = createBlockCanvas(blockData, blockSize, showGrid);
+    const blockCanvas = createBlockCanvas(
+      blockData,
+      blockSize,
+      showGrid,
+      colour
+    );
 
     const canvas = canvasRef.current;
     canvas.width = blockCanvas.width;
@@ -40,10 +47,10 @@ export default function BlockMirror({
     }
 
     ctx.drawImage(blockCanvas, 0, 0);
-  }, [frame]);
+  });
 
   return (
-    <div className={styles.blockMirror}>
+    <div className={styles.blockMirror} id={id}>
       <canvas ref={canvasRef} />
     </div>
   );

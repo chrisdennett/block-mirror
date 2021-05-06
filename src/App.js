@@ -3,49 +3,71 @@ import "./styles.css";
 import { folder, Leva, useControls } from "leva";
 import { WebcamMirror } from "./components/WebcamMirror";
 import BlockMirror from "./components/blockMirror/BlockMirror";
-import ImgPicker from "./components/imgPicker/ImgPicker";
+import useImageCanvas from "./hooks/useImageCanvas";
 
 export default function App() {
+  const [showControls, setShowControls] = useState(true);
   const [frame, setFrame] = useState({ canvas: null, counter: 0 });
 
   const values = useControls({
     showGrid: false,
     showImage: false,
-    block: "lightblue",
+    colour: "black",
     blocksAcross: {
-      value: 80,
+      value: 70,
       min: 1,
-      max: 500,
+      max: 200,
     },
     blockSize: {
       value: 11,
       min: 2,
       max: 100,
     },
-
-    // folder: folder({
-    //   select: { value: "something", options: ["else"] },
-    // }),
+    Input: folder({
+      inputType: {
+        value: "webcam",
+        options: ["webcam", "img", "video"],
+      },
+      image: {
+        render: (get) => get("Input.inputType") === "img",
+        image: "./pexels-rompalli-harish-2235924.jpg",
+      },
+    }),
   });
 
+  useImageCanvas(values.image, (canvas) => {
+    if (values.inputType !== "img") return;
+
+    setFrame((prev) => {
+      return { canvas, counter: prev + 1 };
+    });
+  });
+
+  const toggleControls = (e) => {
+    console.log("e.target.id: ", e.target.id);
+
+    if (e.target.id === "app" || e.target.id === "canvas") {
+      setShowControls((prev) => !prev);
+    }
+  };
+
   return (
-    <div>
-      <Leva {...values} />
-      <div>Webcam, image, video options</div>
+    <div className="app" onClick={toggleControls} id="app">
+      <Leva hidden={showControls} {...values} />
 
-      <ImgPicker setFrame={setFrame} />
+      <BlockMirror id="canvas" frame={frame} {...values} />
 
-      <BlockMirror frame={frame} {...values} />
+      {values.inputType === "webcam" && (
+        <WebcamMirror showVideo={false} setFrame={setFrame} grabInterval={80} />
+      )}
 
-      <WebcamMirror showVideo={false} setFrame={setFrame} grabInterval={80} />
-
-      <a href="https://www.pexels.com/video/jellyfish-swimming-inside-the-aquarium-5158727/">
+      {/* <a href="https://www.pexels.com/video/jellyfish-swimming-inside-the-aquarium-5158727/">
         Video by 伍俊明 from Pexels
       </a>
 
       <a href="https://www.pexels.com/photo/red-crab-2235924/">
         Photo by rompalli harish from Pexels
-      </a>
+      </a> */}
     </div>
   );
 }

@@ -1,4 +1,9 @@
+.blockMirror,
+.blockMirror canvas {
+  pointer-events: none;
+}
+
 .blockMirror canvas {
   display: inline-block;
-  border: 1px solid red;
+  max-width: 100%;
 }

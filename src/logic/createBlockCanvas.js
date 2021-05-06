@@ -67,7 +67,8 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
 export const createBlockCanvas = (
   blockData,
   blockSize = 10,
-  showGrid = true
+  showGrid = true,
+  colour
 ) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
@@ -81,7 +82,7 @@ export const createBlockCanvas = (
   const outputCtx = outputCanvas.getContext("2d");
 
   let blockX, blockY;
-  outputCtx.fillStyle = "black";
+  outputCtx.fillStyle = colour;
   const halfBlockSize = blockSize / 2;
 
   for (let y = 0; y < rows; y++) {
