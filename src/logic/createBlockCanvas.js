@@ -68,7 +68,8 @@ export const createBlockCanvas = (
   blockData,
   blockSize = 10,
   showGrid = true,
-  colour
+  colour,
+  useCircle
 ) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
@@ -81,13 +82,32 @@ export const createBlockCanvas = (
   outputCanvas.height = outHeight;
   const outputCtx = outputCanvas.getContext("2d");
 
-  let blockX, blockY;
   outputCtx.fillStyle = colour;
   const halfBlockSize = blockSize / 2;
+
+  const canvasMiddle = { x: outWidth / 2, y: outHeight / 2 };
 
   for (let y = 0; y < rows; y++) {
     const row = blockData[y];
     for (let x = 0; x < cols; x++) {
+      const blockCornerX = x * blockSize;
+      const blockCornerY = y * blockSize;
+
+      const blockMidX = blockCornerX + halfBlockSize;
+      const blockMidY = blockCornerY + halfBlockSize;
+
+      if (useCircle) {
+        const isWithinCircle = checkIfPointIsInCircle(
+          blockMidX,
+          blockMidY,
+          canvasMiddle.x,
+          canvasMiddle.y,
+          outHeight / 2
+        );
+
+        if (!isWithinCircle) continue;
+      }
+
       if (showGrid) {
         outputCtx.fillStyle = "none";
         outputCtx.strokeStyle = "black";
@@ -95,29 +115,12 @@ export const createBlockCanvas = (
         outputCtx.strokeRect(blockCornerX, blockCornerY, blockSize, blockSize);
       }
 
-      const blockCornerX = x * blockSize;
-      const blockCornerY = y * blockSize;
-
       const blockBrightness = row[x];
-      // if (blockBrightness <= 0) blockBrightness = 0.2;
-
-      // block width deterimined by brightness
       const brightnessSize = blockSize * blockBrightness;
-      const offset = (blockSize - brightnessSize) / 2;
-
-      // TODO this Block pos only works for vertical cetner alignment
-      blockX = offset + blockCornerX;
-      blockY = offset + blockCornerY;
 
       outputCtx.beginPath();
 
-      outputCtx.arc(
-        blockCornerX + halfBlockSize,
-        blockCornerY + halfBlockSize,
-        brightnessSize / 2,
-        0,
-        Math.PI * 2
-      );
+      outputCtx.arc(blockMidX, blockMidY, brightnessSize / 2, 0, Math.PI * 2);
       outputCtx.fill();
 
       outputCtx.closePath();
@@ -203,4 +206,13 @@ export const createBlockDifferenceCanvas = (
   }
 
   return outputCanvas;
+};
+
+const checkIfPointIsInCircle = (a, b, x, y, r) => {
+  var dist_points = (a - x) * (a - x) + (b - y) * (b - y);
+  r *= r;
+  if (dist_points < r) {
+    return true;
+  }
+  return false;
 };

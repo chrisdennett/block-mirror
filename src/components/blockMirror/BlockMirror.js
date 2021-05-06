@@ -10,6 +10,7 @@ export default function BlockMirror({
   blocksAcross,
   blockColour,
   id,
+  useCircle,
 }) {
   const canvasRef = useRef(null);
 
@@ -23,7 +24,8 @@ export default function BlockMirror({
       blockData,
       blockSize,
       showGrid,
-      blockColour
+      blockColour,
+      useCircle
     );
 
     const canvas = canvasRef.current;

@@ -12,6 +12,7 @@ export default function App() {
   const values = useControls({
     showGrid: false,
     showImage: false,
+    useCircle: true,
     blocksAcross: {
       value: 70,
       min: 1,
@@ -36,7 +37,9 @@ export default function App() {
     }),
   });
 
-  useImageCanvas(values.image, (canvas) => {
+  const url = values.inputType === "img" ? values.image : null;
+
+  useImageCanvas(url, (canvas) => {
     if (values.inputType !== "img") return;
 
     setFrame((prev) => {

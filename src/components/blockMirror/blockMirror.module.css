@@ -6,4 +6,5 @@
 .blockMirror canvas {
   display: inline-block;
   max-width: 100%;
+  filter: drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.5));
 }
