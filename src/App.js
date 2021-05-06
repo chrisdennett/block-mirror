@@ -28,7 +28,7 @@ export default function App() {
     Input: folder({
       inputType: {
         value: "webcam",
-        options: ["webcam", "img", "video"],
+        options: ["webcam", "img"],
       },
       image: {
         render: (get) => get("Input.inputType") === "img",
