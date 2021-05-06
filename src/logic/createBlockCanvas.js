@@ -3,7 +3,7 @@ const getAvgBrightnessOfBlock = ({
   inputWidth,
   pixelsPerBlock = 100,
   blockCornerX = 0,
-  blockCornerY = 0
+  blockCornerY = 0,
 }) => {
   const totalPixels = pixelsPerBlock * pixelsPerBlock;
 
@@ -15,9 +15,11 @@ const getAvgBrightnessOfBlock = ({
     for (let x = blockCornerX; x < blockCornerX + pixelsPerBlock; x++) {
       const i = (y * inputWidth + x) * 4;
 
-      totalRed += pixels[i];
-      totalGreen += pixels[i + 1];
-      totalBlue += pixels[i + 2];
+      if (i + 3 < pixels.length) {
+        totalRed += pixels[i];
+        totalGreen += pixels[i + 1];
+        totalBlue += pixels[i + 2];
+      }
     }
   }
 
@@ -31,8 +33,8 @@ const getAvgBrightnessOfBlock = ({
 export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
   const { width: inputW, height: inputH } = inputCanvas;
 
-  const cols = Math.ceil(inputW / pixelsPerBlock);
-  const rows = Math.ceil(inputH / pixelsPerBlock);
+  const cols = Math.round(inputW / pixelsPerBlock);
+  const rows = Math.round(inputH / pixelsPerBlock);
 
   const inputCtx = inputCanvas.getContext("2d");
   let imgData = inputCtx.getImageData(0, 0, inputW, inputH);
@@ -51,7 +53,7 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
         inputWidth: inputW,
         pixelsPerBlock,
         blockCornerX,
-        blockCornerY
+        blockCornerY,
       });
 
       row.push(blockBrightness);
@@ -62,7 +64,11 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
   return blockData;
 };
 
-export const createBlockCanvas = (blockData, blockSize = 10) => {
+export const createBlockCanvas = (
+  blockData,
+  blockSize = 10,
+  showGrid = true
+) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
 
@@ -81,12 +87,18 @@ export const createBlockCanvas = (blockData, blockSize = 10) => {
   for (let y = 0; y < rows; y++) {
     const row = blockData[y];
     for (let x = 0; x < cols; x++) {
-      // average the pixels in the area by looping through
+      if (showGrid) {
+        outputCtx.fillStyle = "none";
+        outputCtx.strokeStyle = "black";
+        outputCtx.lineWidth = 0.4;
+        outputCtx.strokeRect(blockCornerX, blockCornerY, blockSize, blockSize);
+      }
 
       const blockCornerX = x * blockSize;
       const blockCornerY = y * blockSize;
 
       const blockBrightness = row[x];
+      // if (blockBrightness <= 0) blockBrightness = 0.2;
 
       // block width deterimined by brightness
       const brightnessSize = blockSize * blockBrightness;
@@ -99,8 +111,8 @@ export const createBlockCanvas = (blockData, blockSize = 10) => {
       outputCtx.beginPath();
 
       outputCtx.arc(
-        blockX + halfBlockSize,
-        blockY + halfBlockSize,
+        blockCornerX + halfBlockSize,
+        blockCornerY + halfBlockSize,
         brightnessSize / 2,
         0,
         Math.PI * 2
@@ -148,7 +160,7 @@ export const createBlockDifferenceCanvas = (
       const prevBlockBrightness = prevBlockRow[x];
       const diff = Math.abs(blockBrightness - prevBlockBrightness);
 
-      if (diff > threshold) {
+      if (diff >= threshold) {
         // block width deterimined by brightness
         const brightnessSize = blockSize * blockBrightness;
         const offset = (blockSize - brightnessSize) / 2;
@@ -156,6 +168,8 @@ export const createBlockDifferenceCanvas = (
         // TODO this Block pos only works for vertical cetner alignment
         blockX = offset + blockCornerX;
         blockY = offset + blockCornerY;
+
+        outputCtx.fillStyle = "black";
 
         outputCtx.beginPath();
 
@@ -166,6 +180,20 @@ export const createBlockDifferenceCanvas = (
           0,
           Math.PI * 2
         );
+        outputCtx.fill();
+
+        outputCtx.closePath();
+      } else {
+        const redDotSize = 1;
+        const offset = (blockSize - redDotSize) / 2;
+
+        blockX = offset + blockCornerX;
+        blockY = offset + blockCornerY;
+
+        // outputCtx.fillStyle = "red";
+        outputCtx.beginPath();
+
+        outputCtx.arc(blockX, blockY, redDotSize, 0, Math.PI * 2);
         outputCtx.fill();
 
         outputCtx.closePath();
