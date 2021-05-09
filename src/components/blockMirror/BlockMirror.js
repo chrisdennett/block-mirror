@@ -12,6 +12,7 @@ export default function BlockMirror({
   showImage,
   showShadow,
   blocksAcross,
+  canvasShape,
   ...rest
 }) {
   const canvasRef = useRef(null);
@@ -29,6 +30,7 @@ export default function BlockMirror({
       blockData,
       blockSize,
       showShadow,
+      canvasShape,
       ...rest,
     });
 
@@ -37,17 +39,16 @@ export default function BlockMirror({
     canvas.height = blockCanvas.height;
     const ctx = canvas.getContext("2d");
     // ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (canvasShape === "circle") {
+      const circleRadius = canvas.width / 2;
+      const canvasMiddle = { x: circleRadius, y: circleRadius };
+      ctx.beginPath();
+      ctx.arc(canvasMiddle.x, canvasMiddle.y, circleRadius, 0, Math.PI * 2);
+      ctx.clip();
+    }
 
     if (showImage) {
-      ctx.save();
-      if (canvasShape === "circle") {
-        const circleRadius = canvas.width / 2;
-        const canvasMiddle = { x: circleRadius, y: circleRadius };
-        ctx.beginPath();
-        ctx.arc(canvasMiddle.x, canvasMiddle.y, circleRadius, 0, Math.PI * 2);
-        ctx.clip();
-      }
-
+      // ctx.save();
       ctx.drawImage(
         squareCanvas,
         0,
@@ -59,7 +60,7 @@ export default function BlockMirror({
         canvas.width,
         canvas.height
       );
-      ctx.restore();
+      // ctx.restore();
     }
 
     ctx.drawImage(blockCanvas, 0, 0);

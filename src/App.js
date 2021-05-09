@@ -17,14 +17,14 @@ export default function App() {
     },
     showGrid: false,
     showImage: false,
-    showBlocks: true,
+    showPixels: true,
     pixelShape: {
       value: "square",
       options: ["circle", "square", "+", "triangle", "star"],
     },
     showShadow: true,
     blocksAcross: {
-      value: 58,
+      value: 42,
       min: 1,
       max: 200,
     },

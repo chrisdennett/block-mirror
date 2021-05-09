@@ -68,9 +68,10 @@ export const createBlockCanvas = ({
   blockData,
   blockSize = 10,
   showGrid = true,
-  showBlocks,
+  showPixels,
   colour,
-  canvasShape,
+  pixelShape,
+  // canvasShape,
 }) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
@@ -82,6 +83,7 @@ export const createBlockCanvas = ({
   outputCanvas.width = outWidth;
   outputCanvas.height = outHeight;
   const ctx = outputCanvas.getContext("2d");
+  // const canvasMiddle = { x: outWidth / 2, y: outHeight / 2 };
 
   ctx.fillStyle = colour;
 
@@ -91,14 +93,34 @@ export const createBlockCanvas = ({
       const blockCorner = { x: x * blockSize, y: y * blockSize };
       const brightness = row[x];
 
-      drawBrightnessShape({
-        ctx,
-        type: "circle",
-        blockSize,
-        blockCorner,
-        brightness,
-        drawGrid: showGrid,
-      });
+      // use if don't want to clip blocks
+      // if (canvasShape === "circle") {
+      //   const isWithinCircle = checkIfPointIsInCircle(
+      //     blockCorner.x,
+      //     blockCorner.y,
+      //     canvasMiddle.x,
+      //     canvasMiddle.y,
+      //     outHeight / 2
+      //   );
+
+      //   if (!isWithinCircle) continue;
+      // }
+
+      if (showPixels) {
+        drawBrightnessShape({
+          ctx,
+          type: pixelShape,
+          blockSize,
+          blockCorner,
+          brightness,
+        });
+      }
+
+      // draw grid
+      if (showGrid) {
+        ctx.save();
+        ctx.strokeRect(blockCorner.x, blockCorner.y, blockSize, blockSize);
+      }
     }
   }
 
@@ -111,7 +133,6 @@ const drawBrightnessShape = ({
   brightness,
   blockSize,
   ctx,
-  drawGrid = false,
 }) => {
   const brightnessSize = blockSize * brightness;
   const halfBlockSize = blockSize / 2;
@@ -141,13 +162,6 @@ const drawBrightnessShape = ({
     ctx.fill();
     ctx.closePath();
   }
-
-  // draw grid
-  if (drawGrid) {
-    ctx.save();
-    ctx.strokeStyle = "red";
-    ctx.strokeRect(blockCorner.x, blockCorner.y, blockSize, blockSize);
-  }
 };
 
 export const createBlockDifferenceCanvas = (
@@ -165,6 +179,7 @@ export const createBlockDifferenceCanvas = (
   const outputCanvas = document.createElement("canvas");
   outputCanvas.width = outWidth;
   outputCanvas.height = outHeight;
+
   const outputCtx = outputCanvas.getContext("2d");
 
   let blockX, blockY;
