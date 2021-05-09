@@ -70,7 +70,7 @@ export const createBlockCanvas = ({
   showGrid = true,
   showBlocks,
   colour,
-  useCircle,
+  canvasShape,
 }) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
@@ -97,7 +97,7 @@ export const createBlockCanvas = ({
       const blockMidX = blockCornerX + halfBlockSize;
       const blockMidY = blockCornerY + halfBlockSize;
 
-      if (useCircle) {
+      if (canvasShape === "circle") {
         const isWithinCircle = checkIfPointIsInCircle(
           blockMidX,
           blockMidY,
@@ -121,12 +121,17 @@ export const createBlockCanvas = ({
       const blockBrightness = row[x];
       const brightnessSize = blockSize * blockBrightness;
 
+      // brightness circle
       outputCtx.beginPath();
-
       outputCtx.arc(blockMidX, blockMidY, brightnessSize / 2, 0, Math.PI * 2);
       outputCtx.fill();
-
       outputCtx.closePath();
+
+      // horizontal pipe
+      // if (Math.random() > 0.5) {
+      //   outputCtx.fillRect(blockCornerX, blockMidY - 1, blockSize, 2);
+      //   outputCtx.fillRect(blockMidX - 1, blockCornerY, 2, blockSize);
+      // }
     }
   }
 

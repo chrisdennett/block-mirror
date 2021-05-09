@@ -1,36 +1,39 @@
 import React, { useState } from "react";
 import "./styles.css";
 import { folder, Leva, useControls } from "leva";
-import { WebcamMirror } from "./components/WebcamMirror";
+import { WebcamCanvas } from "./components/webcamCanvas/WebcamCanvas";
 import BlockMirror from "./components/blockMirror/BlockMirror";
 import useImageCanvas from "./hooks/useImageCanvas";
+import VideoCanvas from "./components/videoCanvas/VideoCanvas";
 
 export default function App() {
   const [showControls, setShowControls] = useState(true);
   const [frame, setFrame] = useState({ canvas: null, counter: 0 });
 
   const values = useControls({
+    canvasShape: {
+      value: "circle",
+      options: ["circle", "square"],
+    },
     showGrid: false,
-    showImage: true,
+    showImage: false,
     showBlocks: true,
-    useCircle: true,
+    pixelShape: {
+      value: "square",
+      options: ["circle", "square", "+", "triangle", "star"],
+    },
     showShadow: true,
     blocksAcross: {
-      value: 98,
+      value: 58,
       min: 1,
       max: 200,
-    },
-    blockSize: {
-      value: 11,
-      min: 2,
-      max: 100,
     },
     blockColour: "#2a0034",
     bgColour: "#d2a6d8",
     Input: folder({
       inputType: {
-        value: "img",
-        options: ["webcam", "img"],
+        value: "video",
+        options: ["video", "webcam", "img"],
       },
       image: {
         render: (get) => get("Input.inputType") === "img",
@@ -66,17 +69,13 @@ export default function App() {
 
       <BlockMirror id="canvas" frame={frame} {...values} />
 
-      {values.inputType === "webcam" && (
-        <WebcamMirror showVideo={false} setFrame={setFrame} grabInterval={80} />
+      {values.inputType === "video" && (
+        <VideoCanvas showVideo={false} setFrame={setFrame} grabInterval={80} />
       )}
 
-      {/* <a href="https://www.pexels.com/video/jellyfish-swimming-inside-the-aquarium-5158727/">
-        Video by 伍俊明 from Pexels
-      </a>
-
-      <a href="https://www.pexels.com/photo/red-crab-2235924/">
-        Photo by rompalli harish from Pexels
-      </a> */}
+      {values.inputType === "webcam" && (
+        <WebcamCanvas showVideo={false} setFrame={setFrame} grabInterval={80} />
+      )}
     </div>
   );
 }
