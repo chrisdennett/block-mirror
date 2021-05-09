@@ -19,16 +19,16 @@ export default function App() {
     showImage: false,
     showPixels: true,
     pixelShape: {
-      value: "square",
-      options: ["circle", "square", "+", "triangle", "star"],
+      value: "cross",
+      options: ["circle", "square", "triangle", "cross"],
     },
     showShadow: true,
     blocksAcross: {
-      value: 42,
+      value: 38,
       min: 1,
       max: 200,
     },
-    blockColour: "#2a0034",
+    pixelColour: "#2a0034",
     bgColour: "#d2a6d8",
     Input: folder({
       inputType: {
