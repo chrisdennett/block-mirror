@@ -81,61 +81,73 @@ export const createBlockCanvas = ({
   const outputCanvas = document.createElement("canvas");
   outputCanvas.width = outWidth;
   outputCanvas.height = outHeight;
-  const outputCtx = outputCanvas.getContext("2d");
+  const ctx = outputCanvas.getContext("2d");
 
-  outputCtx.fillStyle = colour;
-  const halfBlockSize = blockSize / 2;
-
-  const canvasMiddle = { x: outWidth / 2, y: outHeight / 2 };
+  ctx.fillStyle = colour;
 
   for (let y = 0; y < rows; y++) {
     const row = blockData[y];
     for (let x = 0; x < cols; x++) {
-      const blockCornerX = x * blockSize;
-      const blockCornerY = y * blockSize;
+      const blockCorner = { x: x * blockSize, y: y * blockSize };
+      const brightness = row[x];
 
-      const blockMidX = blockCornerX + halfBlockSize;
-      const blockMidY = blockCornerY + halfBlockSize;
-
-      if (canvasShape === "circle") {
-        const isWithinCircle = checkIfPointIsInCircle(
-          blockMidX,
-          blockMidY,
-          canvasMiddle.x,
-          canvasMiddle.y,
-          outHeight / 2
-        );
-
-        if (!isWithinCircle) continue;
-      }
-
-      if (showGrid) {
-        outputCtx.fillStyle = "none";
-        outputCtx.strokeStyle = "black";
-        outputCtx.lineWidth = 0.4;
-        outputCtx.strokeRect(blockCornerX, blockCornerY, blockSize, blockSize);
-      }
-
-      if (!showBlocks) continue;
-
-      const blockBrightness = row[x];
-      const brightnessSize = blockSize * blockBrightness;
-
-      // brightness circle
-      outputCtx.beginPath();
-      outputCtx.arc(blockMidX, blockMidY, brightnessSize / 2, 0, Math.PI * 2);
-      outputCtx.fill();
-      outputCtx.closePath();
-
-      // horizontal pipe
-      // if (Math.random() > 0.5) {
-      //   outputCtx.fillRect(blockCornerX, blockMidY - 1, blockSize, 2);
-      //   outputCtx.fillRect(blockMidX - 1, blockCornerY, 2, blockSize);
-      // }
+      drawBrightnessShape({
+        ctx,
+        type: "circle",
+        blockSize,
+        blockCorner,
+        brightness,
+        drawGrid: showGrid,
+      });
     }
   }
 
   return outputCanvas;
+};
+
+const drawBrightnessShape = ({
+  type = "square",
+  blockCorner,
+  brightness,
+  blockSize,
+  ctx,
+  drawGrid = false,
+}) => {
+  const brightnessSize = blockSize * brightness;
+  const halfBlockSize = blockSize / 2;
+
+  // CENTER SQUARE
+  if (type === "square") {
+    const offset = (blockSize - brightnessSize) / 2;
+    const blockX = offset + blockCorner.x;
+    const blockY = offset + blockCorner.y;
+
+    ctx.fillRect(blockX, blockY, brightnessSize, brightnessSize);
+  }
+  // SQUARE FROM CORNER
+  else if (type === "squareCorner") {
+    ctx.fillRect(blockCorner.x, blockCorner.y, brightnessSize, brightnessSize);
+  }
+  // CIRCLE
+  else if (type === "circle") {
+    ctx.beginPath();
+    ctx.arc(
+      blockCorner.x + halfBlockSize,
+      blockCorner.y + halfBlockSize,
+      brightnessSize / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // draw grid
+  if (drawGrid) {
+    ctx.save();
+    ctx.strokeStyle = "red";
+    ctx.strokeRect(blockCorner.x, blockCorner.y, blockSize, blockSize);
+  }
 };
 
 export const createBlockDifferenceCanvas = (
