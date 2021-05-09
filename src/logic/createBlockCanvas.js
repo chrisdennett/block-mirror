@@ -62,7 +62,7 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
   return blockData;
 };
 
-export const createBlockCanvas = (blockData, blockSize = 10) => {
+export const createBlockCanvas = (blockData, blockSize = 10, shape) => {
   const cols = blockData[0].length;
   const rows = blockData.length;
 
@@ -72,46 +72,72 @@ export const createBlockCanvas = (blockData, blockSize = 10) => {
   const outputCanvas = document.createElement("canvas");
   outputCanvas.width = outWidth;
   outputCanvas.height = outHeight;
-  const outputCtx = outputCanvas.getContext("2d");
+  const ctx = outputCanvas.getContext("2d");
 
-  let blockX, blockY;
-  outputCtx.fillStyle = "black";
-  const halfBlockSize = blockSize / 2;
+  ctx.fillStyle = "black";
 
   for (let y = 0; y < rows; y++) {
     const row = blockData[y];
     for (let x = 0; x < cols; x++) {
-      // average the pixels in the area by looping through
+      const blockCorner = { x: x * blockSize, y: y * blockSize };
+      const brightness = row[x];
 
-      const blockCornerX = x * blockSize;
-      const blockCornerY = y * blockSize;
-
-      const blockBrightness = row[x];
-
-      // block width deterimined by brightness
-      const brightnessSize = blockSize * blockBrightness;
-      const offset = (blockSize - brightnessSize) / 2;
-
-      // TODO this Block pos only works for vertical cetner alignment
-      blockX = offset + blockCornerX;
-      blockY = offset + blockCornerY;
-
-      outputCtx.beginPath();
-
-      outputCtx.arc(
-        blockX + halfBlockSize,
-        blockY + halfBlockSize,
-        brightnessSize / 2,
-        0,
-        Math.PI * 2
-      );
-      outputCtx.fill();
-
-      outputCtx.closePath();
+      drawBrightnessShape({
+        ctx,
+        type: shape,
+        blockSize,
+        blockCorner,
+        brightness
+      });
     }
   }
 
   return outputCanvas;
+};
+
+const drawBrightnessShape = ({
+  type = "square",
+  blockCorner,
+  brightness,
+  blockSize,
+  ctx,
+  drawGrid = false
+}) => {
+  const brightnessSize = blockSize * brightness;
+  const halfBlockSize = blockSize / 2;
+
+  // CENTER SQUARE
+  if (type === "square") {
+    const offset = (blockSize - brightnessSize) / 2;
+    const blockX = offset + blockCorner.x;
+    const blockY = offset + blockCorner.y;
+
+    ctx.fillRect(blockX, blockY, brightnessSize, brightnessSize);
+  }
+  // SQUARE FROM CORNER
+  else if (type === "squareCorner") {
+    ctx.fillRect(blockCorner.x, blockCorner.y, brightnessSize, brightnessSize);
+  }
+  // CIRCLE
+  else if (type === "circle") {
+    ctx.beginPath();
+    ctx.arc(
+      blockCorner.x + halfBlockSize,
+      blockCorner.y + halfBlockSize,
+      brightnessSize / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // draw grid
+  if (drawGrid) {
+    ctx.save();
+    ctx.strokeStyle = "red";
+    ctx.strokeRect(blockCorner.x, blockCorner.y, blockSize, blockSize);
+  }
 };
 
 export const createBlockDifferenceCanvas = (
@@ -163,6 +189,19 @@ export const createBlockDifferenceCanvas = (
           blockX + halfBlockSize,
           blockY + halfBlockSize,
           brightnessSize / 2,
+          0,
+          Math.PI * 2
+        );
+        outputCtx.fill();
+
+        outputCtx.closePath();
+      } else {
+        outputCtx.beginPath();
+
+        outputCtx.arc(
+          blockX + halfBlockSize,
+          blockY + halfBlockSize,
+          blockSize / 2,
           0,
           Math.PI * 2
         );

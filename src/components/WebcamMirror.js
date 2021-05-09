@@ -10,9 +10,9 @@ import {
 
 export const WebcamMirror = ({
   showVideo = false,
-  resolution = 2,
+  resolution = 10,
   blockSize = 2,
-  threshold = 0.09
+  threshold = 0.07
 }) => {
   const [prevBlockData, setPrevBlockData] = useState(null);
 
@@ -31,23 +31,23 @@ export const WebcamMirror = ({
       const blockData = getBlockData(frameCanvas, resolution);
       let blockCanvas;
 
-      if (prevBlockData) {
-        blockCanvas = createBlockDifferenceCanvas(
-          blockData,
-          prevBlockData,
-          blockSize,
-          threshold
-        );
-      } else {
-        blockCanvas = createBlockCanvas(blockData, resolution);
-      }
-
-      setPrevBlockData(blockData);
+      // if (prevBlockData) {
+      //   blockCanvas = createBlockDifferenceCanvas(
+      //     blockData,
+      //     prevBlockData,
+      //     blockSize,
+      //     threshold
+      //   );
+      // } else {
+      blockCanvas = createBlockCanvas(blockData, blockSize);
+      // }
 
       const ctx = screenCanvas.getContext("2d");
       screenCanvas.width = blockCanvas.width;
       screenCanvas.height = blockCanvas.height;
       ctx.drawImage(blockCanvas, 0, 0);
+
+      setPrevBlockData(blockData);
     }
   };
 

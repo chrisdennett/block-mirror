@@ -7,9 +7,9 @@ export default function App() {
     <div>
       <WebcamMirror
         showVideo={false}
-        resolution={2}
-        blockSize={10}
-        threshold={0.09}
+        resolution={20}
+        blockSize={20}
+        threshold={0}
       />
     </div>
   );
