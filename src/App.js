@@ -15,21 +15,37 @@ export default function App() {
       value: "circle",
       options: ["circle", "square"],
     },
-    showGrid: false,
-    showImage: false,
-    showPixels: true,
-    pixelShape: {
-      value: "cross",
-      options: ["circle", "square", "triangle", "cross"],
-    },
-    showShadow: true,
     blocksAcross: {
       value: 38,
       min: 1,
       max: 200,
     },
-    pixelColour: "#2a0034",
-    bgColour: "#d2a6d8",
+    pixelShape: {
+      value: "square",
+      options: [
+        "circle",
+        "square",
+        "triangle",
+        "cross",
+        "line-vertical",
+        "line-horizontal",
+      ],
+    },
+    Layers: folder({
+      showGrid: false,
+      showImage: false,
+      showPixels: true,
+      showShadow: true,
+    }),
+
+    Colour: folder({
+      useOriginalColour: true,
+      pixelColour: {
+        value: "#2a0034",
+        render: (get) => get("Colour.useOriginalColour") === false,
+      },
+      bgColour: "#d8bda7",
+    }),
     Input: folder({
       inputType: {
         value: "video",

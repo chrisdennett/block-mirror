@@ -1,33 +1,45 @@
 const getAvgBrightnessOfBlock = ({
   pixels,
   inputWidth,
+  inputHeight,
   pixelsPerBlock = 100,
   blockCornerX = 0,
   blockCornerY = 0,
 }) => {
-  const totalPixels = pixelsPerBlock * pixelsPerBlock;
+  let totalPixels = 0;
 
   let totalRed = 0;
   let totalGreen = 0;
   let totalBlue = 0;
 
+  // when at 38 blocks wide it seems to include more pixels for col
+  // on far right
+
+  // const pixelsPerCol =
+
   for (let y = blockCornerY; y < blockCornerY + pixelsPerBlock; y++) {
     for (let x = blockCornerX; x < blockCornerX + pixelsPerBlock; x++) {
       const i = (y * inputWidth + x) * 4;
 
-      if (i + 3 < pixels.length) {
+      if (x < inputWidth && y < inputHeight) {
         totalRed += pixels[i];
         totalGreen += pixels[i + 1];
         totalBlue += pixels[i + 2];
+
+        totalPixels++;
       }
     }
   }
+
+  const r = totalRed / totalPixels;
+  const g = totalGreen / totalPixels;
+  const b = totalBlue / totalPixels;
 
   const brightness =
     totalRed * 0.2126 + totalGreen * 0.7152 + totalBlue * 0.0722;
   const decimalPercentage = 1 - brightness / (totalPixels * 255);
 
-  return decimalPercentage;
+  return { brightness: decimalPercentage, r, g, b };
 };
 
 export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
@@ -51,6 +63,7 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
       const blockBrightness = getAvgBrightnessOfBlock({
         pixels,
         inputWidth: inputW,
+        inputHeight: inputH,
         pixelsPerBlock,
         blockCornerX,
         blockCornerY,
@@ -71,6 +84,7 @@ export const createBlockCanvas = ({
   showPixels,
   pixelShape,
   pixelColour,
+  useOriginalColour,
   // canvasShape,
 }) => {
   const cols = blockData[0].length;
@@ -91,7 +105,7 @@ export const createBlockCanvas = ({
     const row = blockData[y];
     for (let x = 0; x < cols; x++) {
       const blockCorner = { x: x * blockSize, y: y * blockSize };
-      const brightness = row[x];
+      const { brightness, r, g, b } = row[x];
 
       // use if don't want to clip blocks
       // if (canvasShape === "circle") {
@@ -113,6 +127,7 @@ export const createBlockCanvas = ({
           blockSize,
           blockCorner,
           brightness,
+          colour: useOriginalColour ? { r, g, b } : null,
         });
       }
 
@@ -132,6 +147,7 @@ const drawBrightnessShape = ({
   brightness,
   blockSize,
   ctx,
+  colour,
 }) => {
   const brightnessSize = blockSize * brightness;
   const halfBlockSize = blockSize / 2;
@@ -140,6 +156,11 @@ const drawBrightnessShape = ({
     y: blockCorner.y + halfBlockSize,
   };
 
+  if (colour) {
+    ctx.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
+  }
+
+  // SHAPES
   // CENTER SQUARE
   if (type === "square") {
     const offset = (blockSize - brightnessSize) / 2;
@@ -158,8 +179,7 @@ const drawBrightnessShape = ({
     ctx.arc(middle.x, middle.y, brightnessSize / 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.closePath();
-  }
-  if (type === "triangle") {
+  } else if (type === "triangle") {
     const offset = (blockSize - brightnessSize) / 2;
     // ctx.fillRect(blockX, blockY, brightnessSize, brightnessSize);
     ctx.beginPath();
@@ -172,8 +192,7 @@ const drawBrightnessShape = ({
 
     ctx.fill();
     ctx.closePath();
-  }
-  if (type === "cross") {
+  } else if (type === "cross") {
     const crossThickness = brightnessSize / 2.5;
     const halfCrossThickness = crossThickness / 2;
     const offset = (blockSize - brightnessSize) / 2;
@@ -200,6 +219,16 @@ const drawBrightnessShape = ({
 
     ctx.fill();
     ctx.closePath();
+  }
+
+  // LINES
+  else if (type === "line-vertical") {
+    ctx.fillRect(middle.x, blockCorner.y, 1, brightnessSize);
+  } else if (type === "line-horizontal") {
+    ctx.fillRect(blockCorner.x, middle.y, brightnessSize, 1);
+
+    // bizare finding - this rotates the image
+    // ctx.fillRect(blockCorner.y, middle.x, 3, brightnessSize);
   }
 };
 
@@ -282,14 +311,15 @@ export const createBlockDifferenceCanvas = (
   return outputCanvas;
 };
 
-const checkIfPointIsInCircle = (a, b, x, y, r) => {
-  var dist_points = (a - x) * (a - x) + (b - y) * (b - y);
-  r *= r;
-  if (dist_points < r) {
-    return true;
-  }
-  return false;
-};
+// use if don't want to clip blocks this is handy
+// const checkIfPointIsInCircle = (a, b, x, y, r) => {
+//   var dist_points = (a - x) * (a - x) + (b - y) * (b - y);
+//   r *= r;
+//   if (dist_points < r) {
+//     return true;
+//   }
+//   return false;
+// };
 
 export const getSquareCanvas = (inputCanvas) => {
   const outCanvas = document.createElement("canvas");
