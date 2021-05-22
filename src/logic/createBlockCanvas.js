@@ -85,6 +85,7 @@ export const createBlockCanvas = ({
   pixelShape,
   pixelColour,
   useOriginalColour,
+  lineThickness,
   // canvasShape,
 }) => {
   const cols = blockData[0].length;
@@ -128,6 +129,7 @@ export const createBlockCanvas = ({
           blockCorner,
           brightness,
           colour: useOriginalColour ? { r, g, b } : null,
+          lineThickness,
         });
       }
 
@@ -148,6 +150,7 @@ const drawBrightnessShape = ({
   blockSize,
   ctx,
   colour,
+  lineThickness,
 }) => {
   const brightnessSize = blockSize * brightness;
   const halfBlockSize = blockSize / 2;
@@ -155,6 +158,12 @@ const drawBrightnessShape = ({
     x: blockCorner.x + halfBlockSize,
     y: blockCorner.y + halfBlockSize,
   };
+  const offset = (blockSize - brightnessSize) / 2;
+
+  const topOffset = blockCorner.y + offset;
+  const bottomOffset = blockCorner.y + blockSize - offset;
+  const leftOffset = blockCorner.x + offset;
+  const rightOffset = blockCorner.x + blockSize - offset;
 
   if (colour) {
     ctx.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
@@ -163,11 +172,7 @@ const drawBrightnessShape = ({
   // SHAPES
   // CENTER SQUARE
   if (type === "square") {
-    const offset = (blockSize - brightnessSize) / 2;
-    const blockX = offset + blockCorner.x;
-    const blockY = offset + blockCorner.y;
-
-    ctx.fillRect(blockX, blockY, brightnessSize, brightnessSize);
+    ctx.fillRect(leftOffset, topOffset, brightnessSize, brightnessSize);
   }
   // SQUARE FROM CORNER
   else if (type === "squareCorner") {
@@ -179,56 +184,50 @@ const drawBrightnessShape = ({
     ctx.arc(middle.x, middle.y, brightnessSize / 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.closePath();
-  } else if (type === "triangle") {
-    const offset = (blockSize - brightnessSize) / 2;
-    // ctx.fillRect(blockX, blockY, brightnessSize, brightnessSize);
+  } else if (type === "star") {
+    const inset = brightnessSize / 4;
     ctx.beginPath();
-    ctx.moveTo(blockCorner.x + halfBlockSize, blockCorner.y + offset);
-    ctx.lineTo(
-      blockCorner.x + blockSize - offset,
-      blockCorner.y + blockSize - offset
-    );
-    ctx.lineTo(blockCorner.x + offset, blockCorner.y + blockSize - offset);
+    ctx.moveTo(middle.x, bottomOffset);
+    ctx.lineTo(leftOffset, topOffset + inset);
+    ctx.lineTo(rightOffset, topOffset + inset);
+    ctx.fill();
+    ctx.closePath();
 
+    ctx.beginPath();
+    ctx.moveTo(middle.x, topOffset);
+    ctx.lineTo(rightOffset, bottomOffset - inset);
+    ctx.lineTo(leftOffset, bottomOffset - inset);
+    ctx.fill();
+    ctx.closePath();
+  } else if (type === "triangle") {
+    ctx.beginPath();
+    ctx.moveTo(middle.x, topOffset);
+    ctx.lineTo(rightOffset, bottomOffset);
+    ctx.lineTo(leftOffset, bottomOffset);
     ctx.fill();
     ctx.closePath();
   } else if (type === "cross") {
     const crossThickness = brightnessSize / 2.5;
     const halfCrossThickness = crossThickness / 2;
-    const offset = (blockSize - brightnessSize) / 2;
 
-    const left = blockCorner.x + offset;
-    const top = blockCorner.y + offset;
-    const right = blockCorner.x + blockSize - offset;
-    const bottom = blockCorner.y + blockSize - offset;
-
-    // ctx.fillRect(blockX, blockY, brightnessSize, brightnessSize);
-    ctx.beginPath();
-    ctx.moveTo(middle.x - halfCrossThickness, top);
-    ctx.lineTo(middle.x + halfCrossThickness, top);
-    ctx.lineTo(middle.x + halfCrossThickness, middle.y - halfCrossThickness);
-    ctx.lineTo(right, middle.y - halfCrossThickness);
-    ctx.lineTo(right, middle.y + halfCrossThickness);
-    ctx.lineTo(middle.x + halfCrossThickness, middle.y + halfCrossThickness);
-    ctx.lineTo(middle.x + halfCrossThickness, bottom);
-    ctx.lineTo(middle.x - halfCrossThickness, bottom);
-    ctx.lineTo(middle.x - halfCrossThickness, middle.y + halfCrossThickness);
-    ctx.lineTo(left, middle.y + halfCrossThickness);
-    ctx.lineTo(left, middle.y - halfCrossThickness);
-    ctx.lineTo(middle.x - halfCrossThickness, middle.y - halfCrossThickness);
-
-    ctx.fill();
-    ctx.closePath();
+    ctx.fillRect(
+      leftOffset,
+      middle.y - halfCrossThickness,
+      brightnessSize,
+      crossThickness
+    );
+    ctx.fillRect(
+      middle.x - halfCrossThickness,
+      topOffset,
+      crossThickness,
+      brightnessSize
+    );
   }
-
   // LINES
   else if (type === "line-vertical") {
-    ctx.fillRect(middle.x, blockCorner.y, 1, brightnessSize);
+    ctx.fillRect(middle.x, blockCorner.y, lineThickness, brightnessSize);
   } else if (type === "line-horizontal") {
-    ctx.fillRect(blockCorner.x, middle.y, brightnessSize, 1);
-
-    // bizare finding - this rotates the image
-    // ctx.fillRect(blockCorner.y, middle.x, 3, brightnessSize);
+    ctx.fillRect(blockCorner.x, middle.y, brightnessSize, lineThickness);
   }
 };
 
@@ -310,6 +309,9 @@ export const createBlockDifferenceCanvas = (
 
   return outputCanvas;
 };
+
+// bizare finding - flipping x and y like this rotates the image
+// ctx.fillRect(blockCorner.y, middle.x, 3, brightnessSize);
 
 // use if don't want to clip blocks this is handy
 // const checkIfPointIsInCircle = (a, b, x, y, r) => {

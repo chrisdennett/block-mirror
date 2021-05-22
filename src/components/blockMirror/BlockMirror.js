@@ -13,6 +13,7 @@ export default function BlockMirror({
   showShadow,
   blocksAcross,
   canvasShape,
+  imageTransparency,
   ...rest
 }) {
   const canvasRef = useRef(null);
@@ -48,7 +49,8 @@ export default function BlockMirror({
     }
 
     if (showImage) {
-      // ctx.save();
+      ctx.save();
+      ctx.globalAlpha = imageTransparency;
       ctx.drawImage(
         squareCanvas,
         0,
@@ -60,7 +62,7 @@ export default function BlockMirror({
         canvas.width,
         canvas.height
       );
-      // ctx.restore();
+      ctx.restore();
     }
 
     ctx.drawImage(blockCanvas, 0, 0);

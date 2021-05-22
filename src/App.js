@@ -21,19 +21,35 @@ export default function App() {
       max: 200,
     },
     pixelShape: {
-      value: "square",
+      value: "star",
       options: [
         "circle",
         "square",
         "triangle",
+        "star",
         "cross",
         "line-vertical",
         "line-horizontal",
       ],
     },
+    lineThickness: {
+      value: 2,
+      min: 1,
+      max: 10,
+      render: (get) =>
+        get("pixelShape") === "line-vertical" ||
+        get("pixelShape") === "line-horizontal",
+    },
+
     Layers: folder({
       showGrid: false,
       showImage: false,
+      imageTransparency: {
+        value: 0.5,
+        min: 0.1,
+        max: 1,
+        render: (get) => get("Layers.showImage") === true,
+      },
       showPixels: true,
       showShadow: true,
     }),
