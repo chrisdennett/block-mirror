@@ -25,7 +25,7 @@ export default function BlockMirror({
     const imgRes = Math.round(squareCanvas.width / blocksAcross);
 
     // make the block size the correct size to fit screen height
-    const blockSize = window.innerHeight / blocksAcross;
+    const blockSize = Math.ceil(window.innerHeight / blocksAcross);
     const blockData = getBlockData(squareCanvas, imgRes);
     const blockCanvas = createBlockCanvas({
       blockData,

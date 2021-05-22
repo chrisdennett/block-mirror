@@ -101,11 +101,18 @@ export const createBlockCanvas = ({
 
   ctx.fillStyle = pixelColour;
 
-  for (let y = 0; y < rows; y++) {
-    const row = blockData[y];
-    for (let x = 0; x < cols; x++) {
+  // let brightnessAbove
+
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      const row = blockData[y];
       const blockCorner = { x: x * blockSize, y: y * blockSize };
       const { brightness, r, g, b } = row[x];
+
+      const brightnessAbove = y === 0 ? 0 : blockData[y - 1][x].brightness;
+      const brightnessLeft = x === 0 ? 0 : row[x - 1].brightness;
+      const isLastRow = y === rows - 1;
+      const isLastCol = x === cols - 1;
 
       if (showPixels) {
         drawBrightnessShape({
@@ -116,6 +123,10 @@ export const createBlockCanvas = ({
           brightness,
           colour: useOriginalColour ? { r, g, b } : null,
           lineThickness,
+          brightnessAbove,
+          brightnessLeft,
+          isLastRow,
+          isLastCol,
         });
       }
 
@@ -137,6 +148,10 @@ const drawBrightnessShape = ({
   ctx,
   colour,
   lineThickness,
+  brightnessAbove,
+  brightnessLeft,
+  isLastRow,
+  isLastCol,
 }) => {
   const brightnessSize = blockSize * brightness;
   const halfBlockSize = blockSize / 2;
@@ -237,13 +252,52 @@ const drawBrightnessShape = ({
       blockCorner.y + blockSize
     );
     ctx.quadraticCurveTo(rightOffset, middle.y, middle.x, blockCorner.y);
-    ctx.lineTo(rightOffset, middle.y);
+    ctx.fill();
+    ctx.closePath();
+  } else if (type === "insect-legs") {
+    // start from ^ at the top, widen to brightnes
+    const prevBrightness = 0.3;
+    const prevBrightnessWidth = blockSize * prevBrightness;
+    const prevOffset = (blockSize - prevBrightnessWidth) / 2;
+    ctx.beginPath();
+    ctx.moveTo(blockCorner.x + prevOffset, blockCorner.y);
+    ctx.lineTo(blockCorner.x + blockSize - prevOffset, blockCorner.y);
+    ctx.lineTo(rightOffset, blockCorner.y + blockSize);
+    ctx.lineTo(leftOffset, blockCorner.y + blockSize);
+    ctx.fill();
+    ctx.closePath();
+  } else if (type === "spindle-vertical") {
+    // start from ^ at the top, widen to brightnes
+    const prevBrightnessWidth = blockSize * brightnessAbove;
+    const prevOffset = (blockSize - prevBrightnessWidth) / 2;
+    ctx.beginPath();
+    ctx.moveTo(blockCorner.x + prevOffset, blockCorner.y);
+    ctx.lineTo(blockCorner.x + blockSize - prevOffset, blockCorner.y);
 
-    // square bead
-    // ctx.moveTo(middle.x, blockCorner.y);
-    // ctx.lineTo(leftOffset, middle.y);
-    // ctx.lineTo(middle.x, blockCorner.y + blockSize);
-    // ctx.lineTo(rightOffset, middle.y);
+    if (isLastRow) {
+      ctx.lineTo(middle.x, blockCorner.y + blockSize);
+    } else {
+      ctx.lineTo(rightOffset, blockCorner.y + blockSize);
+      ctx.lineTo(leftOffset, blockCorner.y + blockSize);
+    }
+    ctx.fill();
+    ctx.closePath();
+  } else if (type === "spindle-horizontal") {
+    // start from ^ at the top, widen to brightnes
+    const prevBrightnessSize = blockSize * brightnessLeft;
+    const prevOffset = (blockSize - prevBrightnessSize) / 2;
+
+    ctx.beginPath();
+    ctx.moveTo(blockCorner.x, blockCorner.y + prevOffset);
+
+    if (isLastCol) {
+      ctx.lineTo(blockCorner.x + blockSize, middle.y);
+      ctx.lineTo(blockCorner.x, blockCorner.y + blockSize - prevOffset);
+    } else {
+      ctx.lineTo(blockCorner.x + blockSize, topOffset);
+      ctx.lineTo(blockCorner.x + blockSize, bottomOffset);
+      ctx.lineTo(blockCorner.x, blockCorner.y + blockSize - prevOffset);
+    }
     ctx.fill();
     ctx.closePath();
   }

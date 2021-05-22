@@ -21,7 +21,7 @@ export default function App() {
       max: 200,
     },
     pixelShape: {
-      value: "beaded-curtain-2",
+      value: "spindle-vertical",
       options: [
         "circle",
         "square",
@@ -32,8 +32,9 @@ export default function App() {
         "line-horizontal",
         "beaded-curtain-1",
         "beaded-curtain-2",
-        "pipe-vertical",
-        "pipe-horizontal",
+        "insect-legs",
+        "spindle-vertical",
+        "spindle-horizontal",
       ],
     },
     lineThickness: {
@@ -61,10 +62,10 @@ export default function App() {
     Colour: folder({
       useOriginalColour: false,
       pixelColour: {
-        value: "#5f3201",
+        value: "#6d5972",
         render: (get) => get("Colour.useOriginalColour") === false,
       },
-      bgColour: "#e5d4c7",
+      bgColour: "#ddccde",
     }),
     Input: folder({
       inputType: {
