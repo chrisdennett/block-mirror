@@ -98,7 +98,6 @@ export const createBlockCanvas = ({
   outputCanvas.width = outWidth;
   outputCanvas.height = outHeight;
   const ctx = outputCanvas.getContext("2d");
-  // const canvasMiddle = { x: outWidth / 2, y: outHeight / 2 };
 
   ctx.fillStyle = pixelColour;
 
@@ -107,19 +106,6 @@ export const createBlockCanvas = ({
     for (let x = 0; x < cols; x++) {
       const blockCorner = { x: x * blockSize, y: y * blockSize };
       const { brightness, r, g, b } = row[x];
-
-      // use if don't want to clip blocks
-      // if (canvasShape === "circle") {
-      //   const isWithinCircle = checkIfPointIsInCircle(
-      //     blockCorner.x,
-      //     blockCorner.y,
-      //     canvasMiddle.x,
-      //     canvasMiddle.y,
-      //     outHeight / 2
-      //   );
-
-      //   if (!isWithinCircle) continue;
-      // }
 
       if (showPixels) {
         drawBrightnessShape({
@@ -228,6 +214,38 @@ const drawBrightnessShape = ({
     ctx.fillRect(middle.x, blockCorner.y, lineThickness, brightnessSize);
   } else if (type === "line-horizontal") {
     ctx.fillRect(blockCorner.x, middle.y, brightnessSize, lineThickness);
+  } else if (type === "beaded-curtain-1") {
+    // start from ^ at the top, widen to brightnes
+    ctx.beginPath();
+
+    // square bead
+    ctx.moveTo(middle.x, blockCorner.y);
+    ctx.lineTo(leftOffset, middle.y);
+    ctx.lineTo(middle.x, blockCorner.y + blockSize);
+    ctx.lineTo(rightOffset, middle.y);
+    ctx.fill();
+    ctx.closePath();
+  } else if (type === "beaded-curtain-2") {
+    // start from ^ at the top, widen to brightnes
+    ctx.beginPath();
+    ctx.moveTo(middle.x, blockCorner.y);
+    // ctx.lineTo(leftOffset, middle.y);
+    ctx.quadraticCurveTo(
+      leftOffset,
+      middle.y,
+      middle.x,
+      blockCorner.y + blockSize
+    );
+    ctx.quadraticCurveTo(rightOffset, middle.y, middle.x, blockCorner.y);
+    ctx.lineTo(rightOffset, middle.y);
+
+    // square bead
+    // ctx.moveTo(middle.x, blockCorner.y);
+    // ctx.lineTo(leftOffset, middle.y);
+    // ctx.lineTo(middle.x, blockCorner.y + blockSize);
+    // ctx.lineTo(rightOffset, middle.y);
+    ctx.fill();
+    ctx.closePath();
   }
 };
 

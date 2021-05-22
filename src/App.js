@@ -12,16 +12,16 @@ export default function App() {
 
   const values = useControls({
     canvasShape: {
-      value: "circle",
+      value: "square",
       options: ["circle", "square"],
     },
     blocksAcross: {
-      value: 38,
+      value: 42,
       min: 1,
       max: 200,
     },
     pixelShape: {
-      value: "star",
+      value: "beaded-curtain-2",
       options: [
         "circle",
         "square",
@@ -30,6 +30,10 @@ export default function App() {
         "cross",
         "line-vertical",
         "line-horizontal",
+        "beaded-curtain-1",
+        "beaded-curtain-2",
+        "pipe-vertical",
+        "pipe-horizontal",
       ],
     },
     lineThickness: {
@@ -55,12 +59,12 @@ export default function App() {
     }),
 
     Colour: folder({
-      useOriginalColour: true,
+      useOriginalColour: false,
       pixelColour: {
-        value: "#2a0034",
+        value: "#5f3201",
         render: (get) => get("Colour.useOriginalColour") === false,
       },
-      bgColour: "#d8bda7",
+      bgColour: "#e5d4c7",
     }),
     Input: folder({
       inputType: {
