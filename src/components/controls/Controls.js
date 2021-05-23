@@ -5,12 +5,14 @@ import { useQueryParams, NumberParam, StringParam } from "use-query-params";
 export default function Controls({ showControls, onChange }) {
   const [query, setQuery] = useQueryParams({
     canvasShape: StringParam,
+    blocksAcross: NumberParam,
   });
 
-  const [{ canvasShape }, set] = useControls(() => ({
+  const [{ canvasShape, blocksAcross }, set] = useControls(() => ({
     canvasShape: {
       value: "square",
       options: ["circle", "square"],
+      onChange: (option) => setQuery({ ...query, canvasShape: option }),
     },
   }));
 
@@ -101,14 +103,9 @@ export default function Controls({ showControls, onChange }) {
   });
 
   useEffect(() => {
-    //   setQuery({ canvasShape: canvasShape });
-    onChange({ ...values, canvasShape });
-  }, [canvasShape]);
-
-  useEffect(() => {
     if (query.canvasShape) {
       set({ canvasShape: query.canvasShape });
-      // onChange({ ...values, canvasShape });
+      onChange({ ...values, canvasShape: query.canvasShape });
     }
   }, [query.canvasShape]);
 
