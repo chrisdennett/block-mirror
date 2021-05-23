@@ -8,11 +8,17 @@ export default function Controls({ showControls, onChange }) {
     blocksAcross: NumberParam,
   });
 
-  const [{ canvasShape, blocksAcross }, set] = useControls(() => ({
+  const [, set] = useControls(() => ({
     canvasShape: {
       value: "square",
       options: ["circle", "square"],
-      onChange: (option) => setQuery({ ...query, canvasShape: option }),
+      onChange: (option) => setQuery({ canvasShape: option }),
+    },
+    blocksAcross: {
+      value: 42,
+      min: 1,
+      max: 200,
+      onChange: (value) => setQuery({ blocksAcross: value }),
     },
   }));
 
@@ -21,11 +27,11 @@ export default function Controls({ showControls, onChange }) {
     //   value: "square",
     //   options: ["circle", "square"],
     // },
-    blocksAcross: {
-      value: 42,
-      min: 1,
-      max: 200,
-    },
+    // blocksAcross: {
+    //   value: 42,
+    //   min: 1,
+    //   max: 200,
+    // },
 
     pixelShape: {
       value: "spindle-vertical",
@@ -103,11 +109,22 @@ export default function Controls({ showControls, onChange }) {
   });
 
   useEffect(() => {
-    if (query.canvasShape) {
-      set({ canvasShape: query.canvasShape });
-      onChange({ ...values, canvasShape: query.canvasShape });
+    const updatedKeys = Object.keys(query);
+    if (updatedKeys.length > 0) {
+      const updates = {};
+      for (let key of updatedKeys) {
+        if (query[key]) {
+          updates[key] = query[key];
+        }
+      }
+
+      // set the controls based on the query
+      set(updates);
+
+      // update the app based on the query
+      onChange({ ...values, ...updates });
     }
-  }, [query.canvasShape]);
+  }, [query]);
 
   return <Leva hidden={!showControls} {...values} />;
 }
