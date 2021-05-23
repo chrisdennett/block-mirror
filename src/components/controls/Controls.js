@@ -1,14 +1,44 @@
 import React, { useEffect } from "react";
 import { folder, Leva, useControls } from "leva";
-import { useQueryParams, NumberParam, StringParam } from "use-query-params";
+import {
+  useQueryParams,
+  NumberParam,
+  StringParam,
+  BooleanParam,
+} from "use-query-params";
 
 export default function Controls({ showControls, onChange }) {
   const [query, setQuery] = useQueryParams({
     canvasShape: StringParam,
     blocksAcross: NumberParam,
+    pixelShape: StringParam,
+    lineThickness: NumberParam,
+    showEveryXCols: NumberParam,
+    showEveryXRows: NumberParam,
+    imageTransparency: NumberParam,
+    showGrid: BooleanParam,
+    showImage: BooleanParam,
+    showShadow: BooleanParam,
+    showPixels: BooleanParam,
+    useOriginalColour: BooleanParam,
+    pixelColour: StringParam,
+    bgColour: StringParam,
+    inputType: StringParam,
   });
 
-  const [, set] = useControls(() => ({
+  const [values, set] = useControls(() => ({
+    Input: folder({
+      inputType: {
+        value: "video",
+        onChange: (value) => setQuery({ inputType: value }),
+        options: ["video", "webcam", "img"],
+      },
+      image: {
+        image: "./frida-square.jpg",
+        render: (get) => get("Input.inputType") === "img",
+      },
+    }),
+
     canvasShape: {
       value: "square",
       options: ["circle", "square"],
@@ -20,19 +50,6 @@ export default function Controls({ showControls, onChange }) {
       max: 200,
       onChange: (value) => setQuery({ blocksAcross: value }),
     },
-  }));
-
-  const values = useControls({
-    // canvasShape: {
-    //   value: "square",
-    //   options: ["circle", "square"],
-    // },
-    // blocksAcross: {
-    //   value: 42,
-    //   min: 1,
-    //   max: 200,
-    // },
-
     pixelShape: {
       value: "spindle-vertical",
       options: [
@@ -49,73 +66,81 @@ export default function Controls({ showControls, onChange }) {
         "spindle-vertical",
         "spindle-horizontal",
       ],
+      onChange: (value) => setQuery({ pixelShape: value }),
     },
-
     lineThickness: {
       value: 2,
       min: 1,
       max: 10,
+      onChange: (value) => setQuery({ lineThickness: value.toFixed(2) }),
       render: (get) =>
         get("pixelShape") === "line-vertical" ||
         get("pixelShape") === "line-horizontal",
     },
-
     ColsRows: folder({
       showEveryXCols: {
         value: 1,
         step: 1,
         min: 1,
         max: 10,
+        onChange: (value) => setQuery({ showEveryXCols: value }),
       },
       showEveryXRows: {
         value: 1,
         step: 1,
         min: 1,
         max: 10,
+        onChange: (value) => setQuery({ showEveryXRows: value }),
       },
     }),
-
     Layers: folder({
-      showGrid: false,
-      showImage: false,
+      showGrid: {
+        value: false,
+        onChange: (value) => setQuery({ showGrid: value }),
+      },
+      showImage: {
+        value: false,
+        onChange: (value) => setQuery({ showImage: value }),
+      },
       imageTransparency: {
         value: 0.5,
         min: 0.1,
         max: 1,
+        onChange: (value) => setQuery({ imageTransparency: value.toFixed(2) }),
         render: (get) => get("Layers.showImage") === true,
       },
-      showPixels: true,
-      showShadow: true,
+      showPixels: {
+        value: true,
+        onChange: (value) => setQuery({ showPixels: value }),
+      },
+      showShadow: {
+        value: true,
+        onChange: (value) => setQuery({ showShadow: value }),
+      },
     }),
-
     Colour: folder({
-      useOriginalColour: false,
+      useOriginalColour: {
+        value: false,
+        onChange: (value) => setQuery({ useOriginalColour: value }),
+      },
       pixelColour: {
         value: "#6d5972",
+        onChange: (value) => setQuery({ pixelColour: value }),
         render: (get) => get("Colour.useOriginalColour") === false,
       },
-      bgColour: "#ddccde",
-    }),
-    Input: folder({
-      inputType: {
-        value: "video",
-        options: ["video", "webcam", "img"],
-      },
-      image: {
-        render: (get) => get("Input.inputType") === "img",
-        image: "./frida-square.jpg",
+      bgColour: {
+        value: "#ddccde",
+        onChange: (value) => setQuery({ bgColour: value }),
       },
     }),
-  });
+  }));
 
   useEffect(() => {
     const updatedKeys = Object.keys(query);
     if (updatedKeys.length > 0) {
       const updates = {};
       for (let key of updatedKeys) {
-        if (query[key]) {
-          updates[key] = query[key];
-        }
+        updates[key] = query[key];
       }
 
       // set the controls based on the query
@@ -126,5 +151,5 @@ export default function Controls({ showControls, onChange }) {
     }
   }, [query]);
 
-  return <Leva hidden={!showControls} {...values} />;
+  return <Leva hidden={!showControls} />;
 }
