@@ -86,6 +86,8 @@ export const createBlockCanvas = ({
   pixelColour,
   useOriginalColour,
   lineThickness,
+  showEveryXCols,
+  showEveryXRows,
   // canvasShape,
 }) => {
   const cols = blockData[0].length;
@@ -114,7 +116,11 @@ export const createBlockCanvas = ({
       const isLastRow = y === rows - 1;
       const isLastCol = x === cols - 1;
 
-      if (showPixels) {
+      // only draw even cols
+      const showColumn = x % showEveryXCols === 0;
+      const showRow = y % showEveryXRows === 0;
+
+      if (showPixels && showColumn && showRow) {
         drawBrightnessShape({
           ctx,
           type: pixelShape,
