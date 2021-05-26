@@ -80,7 +80,6 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
 export const createBlockCanvas = ({
   blockData,
   blockSize = 10,
-  showGrid = true,
   showPixels,
   pixelShape,
   pixelColour,
@@ -88,6 +87,12 @@ export const createBlockCanvas = ({
   lineThickness,
   showEveryXCols,
   showEveryXRows,
+  showGrid = true,
+  gridType = "square",
+  gridThickness = 1,
+  gridColour = "black",
+  gridPosition = "under",
+  usePixelColour = false,
   // canvasShape,
 }) => {
   const cols = blockData[0].length;
@@ -103,7 +108,8 @@ export const createBlockCanvas = ({
 
   ctx.fillStyle = pixelColour;
 
-  // let brightnessAbove
+  ctx.lineWidth = gridThickness * blockSize;
+  ctx.lineCap = "round";
 
   for (let x = 0; x < cols; x++) {
     for (let y = 0; y < rows; y++) {
@@ -119,6 +125,12 @@ export const createBlockCanvas = ({
       // only draw even cols
       const showColumn = x % showEveryXCols === 0;
       const showRow = y % showEveryXRows === 0;
+
+      ctx.strokeStyle = usePixelColour ? `rgb(${r}, ${g}, ${b})` : gridColour;
+      // draw grid under
+      if (showGrid && gridPosition === "under") {
+        drawGridSquare({ ctx, blockCorner, blockSize, gridType });
+      }
 
       if (showPixels && showColumn && showRow) {
         drawBrightnessShape({
@@ -136,14 +148,47 @@ export const createBlockCanvas = ({
         });
       }
 
-      // draw grid
-      if (showGrid) {
-        ctx.strokeRect(blockCorner.x, blockCorner.y, blockSize, blockSize);
+      // draw grid over the top
+      if (showGrid && gridPosition === "interlaced") {
+        drawGridSquare({ ctx, blockCorner, blockSize, gridType });
       }
     }
   }
 
+  if (showGrid && gridPosition === "over") {
+    drawGrid({ ctx, blockSize, gridType, cols, rows });
+  }
+
   return outputCanvas;
+};
+
+const drawGrid = ({ ctx, blockSize, gridType, cols, rows }) => {
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      const blockCorner = { x: x * blockSize, y: y * blockSize };
+      drawGridSquare({ ctx, blockCorner, blockSize, gridType });
+    }
+  }
+};
+
+const drawGridSquare = ({ ctx, blockCorner, blockSize, gridType }) => {
+  const top = blockCorner.y;
+  const left = blockCorner.x;
+  const bottom = blockCorner.y + blockSize;
+  const right = blockCorner.x + blockSize;
+  const halfBlock = blockSize / 2;
+  const middle = { x: left + halfBlock, y: top + halfBlock };
+
+  if (gridType === "square") {
+    ctx.strokeRect(left, top, blockSize, blockSize);
+  } else if (gridType === "middleSquare") {
+    ctx.strokeRect(middle.x, middle.y, blockSize, blockSize);
+  } else if (gridType === "diagonal") {
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(right, bottom);
+    ctx.stroke();
+  }
 };
 
 const drawBrightnessShape = ({
@@ -161,6 +206,10 @@ const drawBrightnessShape = ({
 }) => {
   const brightnessSize = blockSize * brightness;
   const halfBlockSize = blockSize / 2;
+  // const top = blockCorner.y;
+  // const left = blockCorner.x;
+  // const bottom = blockCorner.y + blockSize;
+  // const right = blockCorner.x + blockSize;
   const middle = {
     x: blockCorner.x + halfBlockSize,
     y: blockCorner.y + halfBlockSize,
@@ -174,6 +223,7 @@ const drawBrightnessShape = ({
 
   if (colour) {
     ctx.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
+    // ctx.strokeStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
   }
 
   // SHAPES

@@ -24,6 +24,11 @@ export default function Controls({ showControls, onChange }) {
     pixelColour: StringParam,
     bgColour: StringParam,
     inputType: StringParam,
+    gridType: StringParam,
+    gridPosition: StringParam,
+    gridColour: StringParam,
+    gridThickness: NumberParam,
+    usePixelColour: BooleanParam,
   });
 
   const [values, set] = useControls(() => ({
@@ -51,10 +56,11 @@ export default function Controls({ showControls, onChange }) {
       onChange: (value) => setQuery({ blocksAcross: value }),
     },
     pixelShape: {
-      value: "spindle-vertical",
+      value: "square",
       options: [
         "circle",
         "square",
+        "squareCorner",
         "triangle",
         "star",
         "cross",
@@ -94,10 +100,6 @@ export default function Controls({ showControls, onChange }) {
       },
     }),
     Layers: folder({
-      showGrid: {
-        value: false,
-        onChange: (value) => setQuery({ showGrid: value }),
-      },
       showImage: {
         value: false,
         onChange: (value) => setQuery({ showImage: value }),
@@ -133,6 +135,43 @@ export default function Controls({ showControls, onChange }) {
         onChange: (value) => setQuery({ bgColour: value }),
       },
     }),
+    Grid: folder({
+      showGrid: {
+        value: false,
+        onChange: (value) => setQuery({ showGrid: value }),
+      },
+      gridType: {
+        value: "diagonal",
+        options: ["diagonal", "square", "middleSquare"],
+        onChange: (value) => setQuery({ gridType: value }),
+        render: (get) => get("Grid.showGrid") === true,
+      },
+      gridThickness: {
+        value: 0.1,
+        step: 0.01,
+        min: 0.1,
+        max: 1,
+        onChange: (value) => setQuery({ gridThickness: value }),
+        render: (get) => get("Grid.showGrid") === true,
+      },
+      usePixelColour: {
+        value: false,
+        onChange: (value) => setQuery({ usePixelColour: value }),
+        render: (get) => get("Grid.showGrid") === true,
+      },
+      gridColour: {
+        value: "#ddccde",
+        onChange: (value) => setQuery({ gridColour: value }),
+        render: (get) =>
+          get("Grid.showGrid") === true && get("Grid.usePixelColour") === false,
+      },
+      gridPosition: {
+        value: "under",
+        options: ["under", "over", "interlaced"],
+        onChange: (value) => setQuery({ gridPosition: value }),
+        render: (get) => get("Grid.showGrid") === true,
+      },
+    }),
   }));
 
   useEffect(() => {
@@ -153,3 +192,6 @@ export default function Controls({ showControls, onChange }) {
 
   return <Leva hidden={!showControls} />;
 }
+
+//#286f5f
+//#a32323
