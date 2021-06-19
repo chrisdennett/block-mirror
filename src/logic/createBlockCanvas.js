@@ -1,10 +1,11 @@
-const getAvgBrightnessOfBlock = ({
+const getIndividualBlockData = ({
   pixels,
   inputWidth,
   inputHeight,
   pixelsPerBlock = 100,
   blockCornerX = 0,
   blockCornerY = 0,
+  palleteKeyIndexValues,
 }) => {
   let totalPixels = 0;
 
@@ -39,12 +40,34 @@ const getAvgBrightnessOfBlock = ({
     totalRed * 0.2126 + totalGreen * 0.7152 + totalBlue * 0.0722;
   const decimalPercentage = 1 - brightness / (totalPixels * 255);
 
-  return { brightness: decimalPercentage, r, g, b };
+  const palleteKeyIndex = findClosestIndex(
+    palleteKeyIndexValues,
+    decimalPercentage
+  );
+
+  return { brightness: decimalPercentage, r, g, b, palleteKeyIndex };
 };
 
-export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
-  const { width: inputW, height: inputH } = inputCanvas;
+function findClosestIndex(arr, num) {
+  let nearestIndex = 0;
 
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] > num) {
+      break;
+    }
+    nearestIndex = i;
+  }
+  return nearestIndex;
+}
+
+export const getBlockData = (inputCanvas, pixelsPerBlock = 10, palleteSize) => {
+  const { width: inputW, height: inputH } = inputCanvas;
+  const palleteKeyIndexValues = [];
+  const quantSize = 1 / palleteSize;
+
+  for (let i = 0; i < palleteSize; i++) {
+    palleteKeyIndexValues.push(i * quantSize);
+  }
   const cols = Math.round(inputW / pixelsPerBlock);
   const rows = Math.round(inputH / pixelsPerBlock);
 
@@ -60,13 +83,14 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
       const blockCornerX = x * pixelsPerBlock;
       const blockCornerY = y * pixelsPerBlock;
 
-      const blockBrightness = getAvgBrightnessOfBlock({
+      const blockBrightness = getIndividualBlockData({
         pixels,
         inputWidth: inputW,
         inputHeight: inputH,
         pixelsPerBlock,
         blockCornerX,
         blockCornerY,
+        palleteKeyIndexValues,
       });
 
       row.push(blockBrightness);
@@ -77,7 +101,7 @@ export const getBlockData = (inputCanvas, pixelsPerBlock = 10) => {
   return blockData;
 };
 
-export const createBlockCanvas = ({
+export const createBrightnessSizeBlockCanvas = ({
   blockData,
   blockSize = 10,
   showPixels,
@@ -95,7 +119,7 @@ export const createBlockCanvas = ({
   usePixelColour = false,
   // canvasShape,
 }) => {
-  const cols = blockData[0].length;
+  const cols = blockData[0].length; // use first row
   const rows = blockData.length;
 
   const outWidth = cols * blockSize;
@@ -126,7 +150,7 @@ export const createBlockCanvas = ({
       const showColumn = x % showEveryXCols === 0;
       const showRow = y % showEveryXRows === 0;
 
-      ctx.strokeStyle = usePixelColour ? `rgb(${r}, ${g}, ${b})` : gridColour;
+      ctx.strokeStyle = usePixelColour ? `rgb(${r}, ${g}, ${b})` : null;
       // draw grid under
       if (showGrid && gridPosition === "under") {
         drawGridSquare({ ctx, blockCorner, blockSize, gridType });
@@ -140,6 +164,103 @@ export const createBlockCanvas = ({
           blockCorner,
           brightness,
           colour: useOriginalColour ? { r, g, b } : null,
+          lineThickness,
+          brightnessAbove,
+          brightnessLeft,
+          isLastRow,
+          isLastCol,
+        });
+      }
+
+      // draw grid over the top
+      if (showGrid && gridPosition === "interlaced") {
+        drawGridSquare({ ctx, blockCorner, blockSize, gridType });
+      }
+    }
+  }
+
+  if (showGrid && gridPosition === "over") {
+    drawGrid({ ctx, blockSize, gridType, cols, rows });
+  }
+
+  return outputCanvas;
+};
+
+export const createBrightnessKeyCanvas = ({
+  blockData,
+  blockSize = 10,
+  showPixels,
+  pixelColour,
+  useOriginalColour,
+  lineThickness,
+  showEveryXCols,
+  showEveryXRows,
+  showGrid = true,
+  gridType = "square",
+  gridThickness = 1,
+  gridColour = "black",
+  gridPosition = "under",
+  usePixelColour = false,
+  palleteSize,
+}) => {
+  const cols = blockData[0].length;
+  const rows = blockData.length;
+  const outWidth = cols * blockSize;
+  const outHeight = rows * blockSize;
+
+  const outputCanvas = document.createElement("canvas");
+  outputCanvas.width = outWidth;
+  outputCanvas.height = outHeight;
+  const ctx = outputCanvas.getContext("2d");
+
+  ctx.fillStyle = pixelColour;
+
+  ctx.lineWidth = gridThickness * blockSize;
+  ctx.lineCap = "round";
+
+  const paletteGreyStep = Math.round(255 / palleteSize);
+
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      const row = blockData[y];
+      const blockCorner = { x: x * blockSize, y: y * blockSize };
+      const { palleteKeyIndex, r, g, b } = row[x];
+
+      const brightnessAbove = y === 0 ? 0 : blockData[y - 1][x].brightness;
+      const brightnessLeft = x === 0 ? 0 : row[x - 1].brightness;
+      const isLastRow = y === rows - 1;
+      const isLastCol = x === cols - 1;
+
+      // only draw even cols
+      const showColumn = x % showEveryXCols === 0;
+      const showRow = y % showEveryXRows === 0;
+
+      const nearestColour = {
+        r: 255 - palleteKeyIndex * paletteGreyStep,
+        g: 255 - palleteKeyIndex * paletteGreyStep,
+        b: 255 - palleteKeyIndex * paletteGreyStep,
+      };
+
+      // if (y === 0 && x === 0) {
+      //   console.log("palleteKeyIndex: ", palleteKeyIndex);
+      //   console.log("paletteGreyStep: ", paletteGreyStep);
+      //   console.log("nearestColour: ", nearestColour);
+      // }
+
+      ctx.strokeStyle = usePixelColour ? `rgb(${r}, ${g}, ${b})` : gridColour;
+      // draw grid under
+      if (showGrid && gridPosition === "under") {
+        drawGridSquare({ ctx, blockCorner, blockSize, gridType });
+      }
+
+      if (showPixels && showColumn && showRow) {
+        drawBrightnessShape({
+          ctx,
+          type: "square",
+          blockSize,
+          blockCorner,
+          brightness: 1,
+          colour: useOriginalColour ? { r, g, b } : nearestColour,
           lineThickness,
           brightnessAbove,
           brightnessLeft,

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import {
-  createBlockCanvas,
+  createBrightnessKeyCanvas,
+  createBrightnessSizeBlockCanvas,
   getBlockData,
+  getKeyBlockData,
   getSquareCanvas,
 } from "../../logic/createBlockCanvas";
 import styles from "./blockMirror.module.css";
@@ -14,6 +16,7 @@ export default function BlockMirror({
   blocksAcross,
   canvasShape,
   imageTransparency,
+  effectType,
   ...rest
 }) {
   const canvasRef = useRef(null);
@@ -26,14 +29,32 @@ export default function BlockMirror({
 
     // make the block size the correct size to fit screen height
     const blockSize = Math.ceil(window.innerHeight / blocksAcross);
-    const blockData = getBlockData(squareCanvas, imgRes);
-    const blockCanvas = createBlockCanvas({
-      blockData,
-      blockSize,
-      showShadow,
-      canvasShape,
-      ...rest,
-    });
+    let blockCanvas = null;
+
+    if (effectType === "brightnessSize") {
+      const blockData = getBlockData(squareCanvas, imgRes);
+      blockCanvas = createBrightnessSizeBlockCanvas({
+        blockData,
+        blockSize,
+        showShadow,
+        canvasShape,
+
+        ...rest,
+      });
+    } else if (effectType === "none") {
+      const palleteSize = 16;
+      const blockData = getBlockData(squareCanvas, imgRes, palleteSize);
+      blockCanvas = createBrightnessKeyCanvas({
+        blockData,
+        blockSize,
+        showShadow,
+        canvasShape,
+        palleteSize,
+        ...rest,
+      });
+    }
+
+    if (!blockCanvas) return null;
 
     const canvas = canvasRef.current;
     canvas.width = blockCanvas.width;

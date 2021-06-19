@@ -29,12 +29,13 @@ export default function Controls({ showControls, onChange }) {
     gridColour: StringParam,
     gridThickness: NumberParam,
     usePixelColour: BooleanParam,
+    effectType: StringParam,
   });
 
   const [values, set] = useControls(() => ({
     Input: folder({
       inputType: {
-        value: "video",
+        value: "img",
         onChange: (value) => setQuery({ inputType: value }),
         options: ["video", "webcam", "img"],
       },
@@ -55,35 +56,52 @@ export default function Controls({ showControls, onChange }) {
       max: 200,
       onChange: (value) => setQuery({ blocksAcross: value }),
     },
-    pixelShape: {
-      value: "square",
-      options: [
-        "circle",
-        "square",
-        "squareCorner",
-        "triangle",
-        "star",
-        "cross",
-        "line-vertical",
-        "line-horizontal",
-        "beaded-curtain-1",
-        "beaded-curtain-2",
-        "insect-legs",
-        "spindle-vertical",
-        "spindle-horizontal",
-      ],
-      onChange: (value) => setQuery({ pixelShape: value }),
-    },
-    lineThickness: {
-      value: 2,
-      min: 1,
-      max: 10,
-      onChange: (value) => setQuery({ lineThickness: value.toFixed(2) }),
-      render: (get) =>
-        get("pixelShape") === "line-vertical" ||
-        get("pixelShape") === "line-horizontal",
-    },
-    ColsRows: folder({
+
+    Effect_Options: folder({
+      effectType: {
+        value: "none",
+        options: ["none", "brightnessSize", "BrightnessKey"],
+        onChange: (value) => setQuery({ effectType: value }),
+      },
+    }),
+
+    Brightness_Size_Options: folder(
+      {
+        pixelShape: {
+          value: "square",
+          options: [
+            "circle",
+            "square",
+            "squareCorner",
+            "triangle",
+            "star",
+            "cross",
+            "line-vertical",
+            "line-horizontal",
+            "beaded-curtain-1",
+            "beaded-curtain-2",
+            "insect-legs",
+            "spindle-vertical",
+            "spindle-horizontal",
+          ],
+          onChange: (value) => setQuery({ pixelShape: value }),
+        },
+        lineThickness: {
+          value: 2,
+          min: 1,
+          max: 10,
+          onChange: (value) => setQuery({ lineThickness: value.toFixed(2) }),
+          render: (get) =>
+            get("pixelShape") === "line-vertical" ||
+            get("pixelShape") === "line-horizontal",
+        },
+      },
+      {
+        render: (get) => get("Effect_Options.effectType") === "brightnessSize",
+      }
+    ),
+
+    Skip_Cols_Rows: folder({
       showEveryXCols: {
         value: 1,
         step: 1,
